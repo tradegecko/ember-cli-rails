@@ -42,7 +42,8 @@ module EmberCli
     def build_errors
       error_lines.
         reject { |line| is_blank_or_backtrace?(line) }.
-        reject { |line| is_deprecation_warning?(line) }
+        reject { |line| is_deprecation_warning?(line) }.
+        reject { |line| is_building_message?(line) }
     end
 
     def has_build_errors?
@@ -50,11 +51,15 @@ module EmberCli
     end
 
     def is_blank_or_backtrace?(line)
-      line =~ /(^\s*$|^\s{4}at .+$)/
+      line =~ /(^\s*$|^\s{4}at .+$)/ || line == "\e[31m\e[39m\n"
     end
 
     def is_deprecation_warning?(line)
       line =~ /^(\e[^\s]+)?DEPRECATION:/
+    end
+
+    def is_building_message?(line)
+      line == "- \e[32mBuilding\e[39m\n"
     end
 
     def error_lines
@@ -70,11 +75,11 @@ module EmberCli
     end
 
     def raise_build_error!
-      backtrace = build_errors.first
-      message = "#{name.inspect} has failed to build: #{backtrace}"
+      build_error = build_errors.first
+      message = "#{name.inspect} has failed to build: #{build_error}"
 
       error = BuildError.new(message)
-      error.set_backtrace(backtrace)
+      error.set_backtrace(error_lines)
 
       fail error
     end
