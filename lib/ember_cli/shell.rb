@@ -42,7 +42,7 @@ module EmberCli
       end
 
       if paths.yarn
-        run! "#{paths.yarn} install"
+        run! "#{paths.yarn} install --frozen-lockfile"
       else
         run! "#{paths.npm} prune && #{paths.npm} install"
       end
